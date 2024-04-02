@@ -1,8 +1,11 @@
+require("dotenv").config({
+  path: "C:/Users/raffp/Levi Ducci/Levi Ducci - INTLLAW/Development/Platform/.env",
+});
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-require("dotenv").config();
+const { mongoURI } = require("./config/dbConfig");
 
 // Import routes
 const authRoutes = require("./routes/authRoutes");
@@ -16,15 +19,13 @@ const aiRoutes = require("./routes/aiRoutes");
 // Import middleware
 const { authMiddleware } = require("./middleware/authMiddleware");
 
-const { mongoURI } = require("./config/dbConfig"); // Make sure the path is correct
+// Make sure the path is correct
 
 // Connect to MongoDB Atlas
 mongoose
-  .connect(
-    "mongodb+srv://rafaelprezia:Serafina112006@intllaw.tiinkq0.mongodb.net/?retryWrites=true&w=majority&appName=INTLLAW"
-  )
+  .connect(mongoURI)
   .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch((err) => console.error("Error connecting to MongoDB Atlas:", err));
+  .catch((err) => console.error(mongoURI, err));
 
 const app = express();
 
@@ -35,3 +36,5 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
+
+//  "mongodb+srv://rafaelprezia:Serafina112006@intllaw.tiinkq0.mongodb.net/?retryWrites=true&w=majority&appName=INTLLAW"
