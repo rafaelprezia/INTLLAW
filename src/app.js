@@ -1,6 +1,11 @@
 require("dotenv").config({
   path: "C:/Users/raffp/Levi Ducci/Levi Ducci - INTLLAW/Development/Platform/.env",
 });
+const ssoAuthRouter = require("./api/auth/ssoController");
+
+// Other middlewares and configurations...
+
+// Use the auth router from ssoController.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -28,7 +33,7 @@ mongoose
   .catch((err) => console.error(mongoURI, err));
 
 const app = express();
-
+app.use(ssoAuthRouter);
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
