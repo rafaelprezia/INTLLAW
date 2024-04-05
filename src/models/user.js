@@ -15,6 +15,7 @@ const userSchema = new Schema({
   updatedAt: { type: Date },
   email: { type: String, required: true, unique: true },
   emailVerified: { type: Boolean },
+  isAdmin: { type: Boolean, default: false },
 });
 
 // Create a model using the schema

@@ -20,9 +20,7 @@ const paymentRoutes = require("./routes/paymentRoutes");
 const userRoutes = require("./routes/userRoutes");
 const mediaRoutes = require("./routes/mediaRoutes");
 const aiRoutes = require("./routes/aiRoutes");
-
-// Import middleware
-const { authMiddleware } = require("./middleware/authMiddleware");
+const adminRoutes = require("./routes/adminRoutes"); // Adjust the path as necessary
 
 // Make sure the path is correct
 
@@ -34,6 +32,7 @@ mongoose
 
 const app = express();
 app.use(ssoAuthRouter);
+app.use("/admin", adminRoutes);
 // Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
