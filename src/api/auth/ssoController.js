@@ -4,6 +4,7 @@ const { auth } = require("express-openid-connect");
 const { requiresAuth } = require("express-openid-connect");
 const User = require("../../models/user");
 require("dotenv").config();
+const jwt = require("jsonwebtoken");
 
 const router = Router();
 
@@ -18,6 +19,12 @@ const config = {
 // auth router attaches /login, /logout, and /callback routes to the baseURL
 router.use(auth(config));
 
+// Helper function to generate a new token
+const generateBearerToken = (userData) => {
+  // Replace 'your_jwt_secret' with your actual secret key, ideally stored in an environment variable
+  return jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: "87600h" });
+};
+
 router.get("/profile", requiresAuth(), async (req, res) => {
   // Extract user data from the Auth0 profile
   const userData = {
@@ -31,24 +38,35 @@ router.get("/profile", requiresAuth(), async (req, res) => {
     updatedAt: req.oidc.user.updated_at,
     email: req.oidc.user.email,
     emailVerified: req.oidc.user.email_verified,
+    bearerToken: "", // Placeholder for the new token
   };
 
   try {
+    // Check if the user already exists
+    let user = await User.findOne({ auth0Id: userData.auth0Id });
+
+    // If the user does not exist, generate a new bearer token
+    if (!user) {
+      userData.bearerToken = generateBearerToken({ email: userData.email });
+    }
+
     // Update the user profile in the database,
     // or create a new one if it doesn't exist
-    const user = await User.findOneAndUpdate(
+    user = await User.findOneAndUpdate(
       { auth0Id: userData.auth0Id },
       userData,
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     // Send the user profile in the response
-    res.send(user);
+    res.json({ message: "User profile stored successfully", user });
   } catch (error) {
     console.error(error);
     res.status(500).send("Error saving user to database");
   }
 });
+
+module.exports = router;
 
 // req.isAuthenticated is provided from the auth router
 router.get("/", (req, res) => {

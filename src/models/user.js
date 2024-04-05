@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 
 // Create Schema for the user model
 const userSchema = new Schema({
-  auth0Id: { type: String, required: true, unique: true }, // This corresponds to the 'sub' field from Auth0
+  auth0Id: { type: String, required: true, unique: true },
   givenName: { type: String },
   familyName: { type: String },
   nickname: { type: String },
@@ -16,6 +16,7 @@ const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   emailVerified: { type: Boolean },
   isAdmin: { type: Boolean, default: false },
+  bearerToken: { type: String, default: "" }, // New field for storing the bearer token
 });
 
 // Create a model using the schema
