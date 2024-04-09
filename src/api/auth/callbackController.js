@@ -1,33 +1,27 @@
 // src/api/auth/callbackController.js
-const { Router } = require("express");
-const jwtDecode = require("jwt-decode"); // npm install jwt-decode
-const User = require("../models/user");
 
-const router = Router();
+const User = require("../../models/user"); // Import your User model
 
-router.get("/callback", (req, res) => {
-  const { id_token } = req.query; // Or however you are receiving the ID token
+// Define your handleCallback function
+exports.handleCallback = async (req, res) => {
+  const auth0Id = req.params.auth0Id;
 
-  // Decode the ID token to get user data
-  const userData = jwtDecode(id_token);
+  try {
+    // Fetch the user with the given Auth0 ID
+    const user = await User.findOne({ auth0Id: auth0Id });
 
-  // Store or update user data in your database
-  User.findOneAndUpdate(
-    { auth0Id: userData.sub },
-    userData,
-    { upsert: true, new: true, setDefaultsOnInsert: true },
-    (err, user) => {
-      if (err) {
-        console.error("Error saving user to database", err);
-        return res.status(500).send("Internal Server Error");
-      }
-
-      // Set up session and cookie here
-
-      // Redirect to the user's dashboard or home page
-      res.redirect("/dashboard");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-  );
-});
 
-module.exports = router;
+    // Redirect the user to the specified website
+    res.redirect(
+      "https://rafaelpreziagomes.github.io/creative-box-website/index.html"
+    );
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ message: "Error handling callback", error: error.message });
+  }
+};

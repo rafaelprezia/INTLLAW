@@ -1,70 +1,83 @@
-// /controllers/AdminController.js
+// src/controllers/adminController.js
+const User = require("../../models/user");
+const Admin = require("../../models/admin");
+const jwt = require("jsonwebtoken");
 
-const User = require("../../models/user"); // Adjust the path as needed
+exports.createAdmin = async (req, res) => {
+  const { email, password, secretKey } = req.body;
 
-// Function to make a user an admin
-exports.makeAdmin = async (req, res) => {
-  const { userId } = req.params;
+  // Replace 'your-secret-key' with your actual secret key
+  if (
+    secretKey !==
+    "a3a225e4caa5a28f21ad83928e4fd1bc42af6e5857c22d1505d4f15a97ec80a467cad7a9dc7e2235766796f5b54bca9d"
+  ) {
+    return res.status(401).json({ message: "Unauthorized to create admin" });
+  }
 
   try {
-    // Update the user's role to 'admin'
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      { role: "admin" },
-      { new: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // Respond with success message
-    res.json({
-      message: "User has been successfully made an admin",
-      user: updatedUser,
-    });
+    const admin = new Admin({ email, password });
+    await admin.save();
+    res.status(201).json({ message: "Admin created successfully", admin });
   } catch (error) {
-    console.error("Error making user an admin:", error);
-    res.status(500).send("An error occurred while making the user an admin.");
+    res
+      .status(400)
+      .json({ message: "Error creating admin", error: error.message });
+  }
+};
+exports.adminLogin = async (req, res) => {
+  try {
+    const admin = await Admin.findByCredentials(
+      req.body.email,
+      req.body.password
+    );
+    const token = jwt.sign(
+      { id: admin._id, isAdmin: admin.isAdmin },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+    res.json({ admin, token });
+  } catch (error) {
+    res.status(401).json({ message: "Login Failed", error: error.message });
   }
 };
 
-exports.getUserByAuth0Id = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   try {
-    const user = await User.findOne({ auth0Id: req.params.auth0Id });
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: error.message });
+  }
+};
+
+//create a function to  get usser by ID
+
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.json(user);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching user", error: error.message });
+  }
+};
+
+// Add a admin controller function to delete a user by ID
+exports.deleteUserById = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id); // Find and delete user by ID
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json(user);
+    res.json({ message: "User deleted successfully", user });
   } catch (error) {
-    console.error("Error fetching user:", error);
-    res.status(500).send("An error occurred while fetching the user.");
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: error.message });
   }
 };
 
-exports.deleteUserByAuth0Id = async (req, res) => {
-  try {
-    const result = await User.deleteOne({ auth0Id: req.params.auth0Id });
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json({ message: "User deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    res.status(500).send("An error occurred while deleting the user.");
-  }
-};
-
-exports.updateUserByAuth0Id = async (req, res) => {
-  try {
-    const user = await User.findOneAndUpdate(
-      { auth0Id: req.params.auth0Id },
-      req.body,
-      { new: true }
-    );
-    res.json(user);
-  } catch (error) {
-    console.error("Error updating user:", error);
-    res.status(500).send("An error occurred while updating the user.");
-  }
-};
+// Add other admin controller functions as necessary

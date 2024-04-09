@@ -16,7 +16,6 @@ const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   emailVerified: { type: Boolean },
   isAdmin: { type: Boolean, default: false },
-  bearerToken: { type: String, default: "" }, // New field for storing the bearer token
 });
 
 // Create a model using the schema
