@@ -1,9 +1,7 @@
 //src/app.js
 
 require("dotenv").config({
-  path:
-    "/Users/rafaelprezia/Desktop/StorageD/INTLLAW/.env" ||
-    "C:/Users/raffp/Levi Ducci/Levi Ducci - INTLLAW/Development/Platform/.env",
+  path: "C:/Users/raffp/Levi Ducci/Levi Ducci - INTLLAW/Development/Platform/.env",
 });
 const ssoAuthRouter = require("./api/auth/ssoController");
 
@@ -40,6 +38,7 @@ app.use(express.json());
 app.use(ssoAuthRouter);
 app.use("/admin", adminRoutes);
 app.use("/auth", callbackRoutes);
+app.use("/auth", userRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
