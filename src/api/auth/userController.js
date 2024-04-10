@@ -79,7 +79,6 @@ exports.deleteOwnAccount = async (req, res) => {
       .json({ message: "Error deleting user", error: error.message });
   }
 };
-
 exports.updateUserByAuth0Id = async (req, res) => {
   const auth0UserId = req.params.auth0Id; // Get Auth0 ID from authenticated user
   const userData = req.body; // Get user data from request body
@@ -90,7 +89,6 @@ exports.updateUserByAuth0Id = async (req, res) => {
 
     const options = {
       method: "patch",
-      maxBodyLength: Infinity,
       url:
         "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/users/" + auth0UserId,
       headers: {
@@ -98,10 +96,10 @@ exports.updateUserByAuth0Id = async (req, res) => {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
-      data: JSON.stringify(userData),
+      data: { user_metadata: { userData } }, // No need to stringify, axios does it for you
     };
 
-    const response = await axios.request(options);
+    const response = await axios(options);
 
     if (response.status !== 200) {
       return res.status(404).json({ message: "User not found in Auth0" });
@@ -112,20 +110,16 @@ exports.updateUserByAuth0Id = async (req, res) => {
       { auth0Id: auth0UserId },
       userData,
       { new: true }
-    ); // Find and update user by ID
+    );
+
     if (!user) {
       return res.status(404).json({ message: "User not found in database" });
     }
 
-    res.status(200).json({
-      message: "User updated successfully in Auth0 and database.",
-      user: user,
-    });
+    return res.status(200).json(user); // Send updated user as response
   } catch (error) {
-    console.error("Error updating user:", error);
-    res
-      .status(500)
-      .json({ message: "Error updating user", error: error.message });
+    console.error(error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
 

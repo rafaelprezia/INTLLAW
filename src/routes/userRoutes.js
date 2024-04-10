@@ -9,6 +9,6 @@ router.get("/user/:auth0Id", userController.getUserByAuth0Id);
 
 router.delete("/user/:auth0Id", userController.deleteOwnAccount);
 
-router.put("/user/:auth0Id", userController.updateUserByAuth0Id);
+router.patch("/user/:auth0Id", userController.updateUserByAuth0Id);
 
 module.exports = router;
