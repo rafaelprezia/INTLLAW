@@ -2,6 +2,7 @@
 const User = require("../../models/user");
 const Admin = require("../../models/admin");
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 
 exports.createAdmin = async (req, res) => {
   const { email, password, secretKey } = req.body;
@@ -66,18 +67,127 @@ exports.getUserById = async (req, res) => {
 };
 
 // Add a admin controller function to delete a user by ID
-exports.deleteUserById = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id); // Find and delete user by ID
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+
+// Get a valid access token from Auth0
+
+// Set up your Auth0 credentials and target URL for obtaining the access token
+
+async function getAuth0ManagementApiToken() {
+  const tokenUrl = "https://dev-rutnsxpydci36ykm.us.auth0.com/oauth/token";
+  const clientId = "pN23PZBvPvUVo79U9souO4OYAuAx9vnc";
+  const clientSecret =
+    "uEU-JRODWzPqNI-oYYy36S8CJFaSa1rxl2I6_Vm_mMGRdzYPwR2FRiwH4PzWWByw";
+  const audience = "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/";
+
+  const response = await axios.post(
+    tokenUrl,
+    {
+      client_id: clientId,
+      client_secret: clientSecret,
+      audience: audience,
+      grant_type: "client_credentials",
+    },
+    {
+      headers: { "content-type": "application/json" },
     }
-    res.json({ message: "User deleted successfully", user });
+  );
+
+  return response.data.access_token;
+}
+
+// New delete user by ID function with connection to Auth0
+
+// Add a admin controller function to delete a user by ID
+
+//New function combination of the two bellow
+
+exports.deleteUserById = async (req, res) => {
+  const auth0UserId = req.params.auth0UserId;
+  console.log(auth0UserId);
+  try {
+    // Delete user from Auth0
+    const token = await getAuth0ManagementApiToken();
+
+    const options = {
+      method: "delete",
+      maxBodyLength: Infinity,
+      url:
+        "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/users/" + auth0UserId,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response = await axios.request(options);
+
+    if (response.status !== 204) {
+      return res.status(404).json({ message: "User not found in Auth0" });
+    }
+
+    // Delete user from database
+    const user = await User.findOneAndDelete({ auth0Id: auth0UserId }); // Find and delete user by ID
+    if (!user) {
+      return res.status(404).json({ message: "User not found in database" });
+    }
+
+    res.status(200).json({
+      message: "User deleted successfully from Auth0 and database.",
+    });
   } catch (error) {
+    console.error("Error deleting user:", error);
     res
       .status(500)
       .json({ message: "Error deleting user", error: error.message });
   }
 };
+
+// exports.deleteUserById = async (req, res) => {
+//   const auth0UserId = req.params.auth0UserId;
+//   console.log(auth0UserId);
+//   try {
+//     const token = await getAuth0ManagementApiToken();
+
+//     const options = {
+//       method: "delete",
+//       maxBodyLength: Infinity,
+//       url:
+//         "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/users/" + auth0UserId,
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//       },
+//     };
+
+//     const response = await axios.request(options);
+
+//     if (response.status !== 204) {
+//       return res.status(404).json({ message: "User not found in Auth0" });
+//     }
+
+//     res.status(200).json({
+//       message: "User deleted successfully from Auth0.",
+//     });
+//   } catch (error) {
+//     console.error("Error deleting user:", error);
+//     res
+//       .status(500)
+//       .json({ message: "Error deleting user", error: error.message });
+//   }
+// };
+
+// Old delete user by ID function
+
+// exports.deleteUserById = async (req, res) => {
+//   try {
+//     const user = await User.findByIdAndDelete(req.params.auth0UserId); // Find and delete user by ID
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     res.json({ message: "User deleted successfully", user });
+//   } catch (error) {
+//     res
+//       .status(500)
+//       .json({ message: "Error deleting user", error: error.message });
+//   }
+// };
 
 // Add other admin controller functions as necessary

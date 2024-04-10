@@ -11,19 +11,13 @@ const router = Router();
 const config = {
   authRequired: false,
   auth0Logout: true,
-  secret: "a long, randomly-generated string stored in env",
+  secret: "9DqqBfCCq8f-Ayxjeo7H5E_xuEsNUax63otgg3XNbWqar4SGGP3Fb4CUTmYgu4rk",
   baseURL: "http://localhost:3000",
   clientID: "7f8P26uwamhzz8psBnPJxL9mdGwtLIJs",
   issuerBaseURL: "https://dev-rutnsxpydci36ykm.us.auth0.com",
 };
 // auth router attaches /login, /logout, and /callback routes to the baseURL
 router.use(auth(config));
-
-// Helper function to generate a new token
-const generateBearerToken = (userData) => {
-  // Replace 'your_jwt_secret' with your actual secret key, ideally stored in an environment variable
-  return jwt.sign(userData, process.env.JWT_SECRET, { expiresIn: "87600h" });
-};
 
 router.get("/profile", requiresAuth(), async (req, res) => {
   // Extract user data from the Auth0 profile
@@ -38,17 +32,11 @@ router.get("/profile", requiresAuth(), async (req, res) => {
     updatedAt: req.oidc.user.updated_at,
     email: req.oidc.user.email,
     emailVerified: req.oidc.user.email_verified,
-    bearerToken: "", // Placeholder for the new token
   };
 
   try {
     // Check if the user already exists
     let user = await User.findOne({ auth0Id: userData.auth0Id });
-
-    // If the user does not exist, generate a new bearer token
-    if (!user) {
-      userData.bearerToken = generateBearerToken({ email: userData.email });
-    }
 
     // Update the user profile in the database,
     // or create a new one if it doesn't exist
@@ -65,8 +53,6 @@ router.get("/profile", requiresAuth(), async (req, res) => {
     res.status(500).send("Error saving user to database");
   }
 });
-
-module.exports = router;
 
 // req.isAuthenticated is provided from the auth router
 router.get("/", (req, res) => {
