@@ -36,7 +36,7 @@ router.get("/admin/dashboard", (req, res) => {
 });
 
 router.delete(
-  "/users/:id",
+  "/users/:auth0UserId",
   authenticateJWT,
   authorizeAdmin,
   adminController.deleteUserById
