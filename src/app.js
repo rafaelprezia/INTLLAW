@@ -24,6 +24,7 @@ const mediaRoutes = require("./routes/mediaRoutes");
 const aiRoutes = require("./routes/aiRoutes");
 const adminRoutes = require("./routes/adminRoutes"); // Adjust the path as necessary
 const callbackRoutes = require("./routes/callbackRoutes"); // Adjust the path as necessary
+const superUserRoutes = require("./routes/superUserRoutes");
 
 // ... other imports and app setup ...
 
@@ -34,11 +35,15 @@ mongoose
   .catch((err) => console.error(mongoURI, err));
 
 const app = express();
+// Parses incoming requests with URL-encoded payloads
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(ssoAuthRouter);
 app.use("/admin", adminRoutes);
 app.use("/auth", callbackRoutes);
 app.use("/auth", userRoutes);
+app.use("/root", superUserRoutes);
+app.use(cors()); // This allows all cross-origin requests. You might want to configure it for specific origins.
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

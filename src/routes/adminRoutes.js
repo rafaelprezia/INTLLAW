@@ -23,8 +23,6 @@ router.get(
   adminController.getUserById
 );
 
-router.post("/create-admin", adminController.createAdmin);
-// Login route should not use authenticateJWT middleware
 router.post("/login", adminController.adminLogin);
 
 // Protect routes below this line with middleware
@@ -40,6 +38,27 @@ router.delete(
   authenticateJWT,
   authorizeAdmin,
   adminController.deleteUserById
+);
+
+router.patch(
+  "/users/transform-user/:auth0UserId",
+  authenticateJWT,
+  authorizeAdmin,
+  adminController.transformUserToWorker
+);
+
+router.get(
+  "/users/workers/:adminId",
+  authenticateJWT,
+  authorizeAdmin,
+  adminController.getWorkersByAdminId
+);
+
+router.get(
+  "/users/worker/:auth0UserId",
+  authenticateJWT,
+  authorizeAdmin,
+  adminController.getWorkerByAdminIdAndUserId
 );
 
 // Add other admin routes as necessary

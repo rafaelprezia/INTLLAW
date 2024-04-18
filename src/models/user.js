@@ -27,6 +27,8 @@ const userSchema = new Schema({
   locale: { type: String },
   updatedAt: { type: Date },
   isAdmin: { type: Boolean, default: false },
+  isWorker: { type: Boolean, default: false },
+  admin: { type: String, required: true, unique: false, default: "none" },
 });
 
 const User = mongoose.model("User", userSchema);
