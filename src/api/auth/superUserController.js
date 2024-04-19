@@ -100,6 +100,7 @@ exports.serveAdminCreationForm = (req, res) => {
       <body>
         <form action="http://localhost:3000/root/createAdmin/${secretKey}" method="post">
           <h1>Create Admin</h1>
+          <input type="name" name="organization" placeholder="Enter your Organization" required>
           <input type="email" name="email" placeholder="Enter your email" required>
           <input type="password" name="password" placeholder="Enter your password" required>
           <button type="submit">Create Account</button>
@@ -118,13 +119,13 @@ exports.serveAdminCreationForm = (req, res) => {
 
 exports.createAdmin = async (req, res) => {
   console.log(req.body); // To check if email and password are received
-  const { email, password } = req.body;
+  const { organization, email, password } = req.body;
   const { secretKey } = req.params;
 
   try {
     verifyKey(secretKey);
 
-    const admin = new Admin({ email, password });
+    const admin = new Admin({ organization, email, password });
     await admin.save();
     res.status(201).json({ message: "Admin created successfully", admin });
   } catch (error) {
@@ -149,5 +150,96 @@ exports.superUserLogin = async (req, res) => {
     res.json({ superUser, token });
   } catch (error) {
     res.status(401).json({ message: "Login Failed", error: error.message });
+  }
+};
+
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.json(users);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching users", error: error.message });
+  }
+};
+
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    res.json(user);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching user", error: error.message });
+  }
+};
+
+async function getAuth0ManagementApiToken() {
+  const tokenUrl = "https://dev-rutnsxpydci36ykm.us.auth0.com/oauth/token";
+  const clientId = "pN23PZBvPvUVo79U9souO4OYAuAx9vnc";
+  const clientSecret =
+    "uEU-JRODWzPqNI-oYYy36S8CJFaSa1rxl2I6_Vm_mMGRdzYPwR2FRiwH4PzWWByw";
+  const audience = "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/";
+
+  const response = await axios.post(
+    tokenUrl,
+    {
+      client_id: clientId,
+      client_secret: clientSecret,
+      audience: audience,
+      grant_type: "client_credentials",
+    },
+    {
+      headers: { "content-type": "application/json" },
+    }
+  );
+
+  return response.data.access_token;
+}
+
+// New delete user by ID function with connection to Auth0
+
+// Add a admin controller function to delete a user by ID
+
+//New function combination of the two bellow
+
+exports.deleteUserById = async (req, res) => {
+  const auth0UserId = req.params.auth0UserId;
+  console.log(auth0UserId);
+  try {
+    // Delete user from Auth0
+    const token = await getAuth0ManagementApiToken();
+
+    const options = {
+      method: "delete",
+      maxBodyLength: Infinity,
+      url:
+        "https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/users/" + auth0UserId,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    const response = await axios.request(options);
+
+    if (response.status !== 204) {
+      return res.status(404).json({ message: "User not found in Auth0" });
+    }
+
+    // Delete user from database
+    const user = await User.findOneAndDelete({ auth0Id: auth0UserId }); // Find and delete user by ID
+    if (!user) {
+      return res.status(404).json({ message: "User not found in database" });
+    }
+
+    res.status(200).json({
+      message: "User deleted successfully from Auth0 and database.",
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res
+      .status(500)
+      .json({ message: "Error deleting user", error: error.message });
   }
 };

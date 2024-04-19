@@ -29,6 +29,7 @@ const userSchema = new Schema({
   isAdmin: { type: Boolean, default: false },
   isWorker: { type: Boolean, default: false },
   admin: { type: String, required: true, unique: false, default: "none" },
+  organization: { type: String },
 });
 
 const User = mongoose.model("User", userSchema);

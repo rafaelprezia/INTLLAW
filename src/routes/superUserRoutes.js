@@ -22,4 +22,25 @@ router.post("/createAdmin/:secretKey", superUserController.createAdmin);
 
 router.post("/login", superUserController.superUserLogin);
 
+router.get(
+  "/users",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.getAllUsers
+);
+
+router.get(
+  "/users/:id",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.getUserById
+);
+
+router.delete(
+  "/users/:auth0UserId",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.deleteUserById
+);
+
 module.exports = router;

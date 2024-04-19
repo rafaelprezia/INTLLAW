@@ -9,20 +9,6 @@ const {
 
 const router = require("express").Router();
 
-router.get(
-  "/users",
-  authenticateJWT,
-  authorizeAdmin,
-  adminController.getAllUsers
-);
-
-router.get(
-  "/users/:id",
-  authenticateJWT,
-  authorizeAdmin,
-  adminController.getUserById
-);
-
 router.post("/login", adminController.adminLogin);
 
 // Protect routes below this line with middleware
@@ -32,13 +18,6 @@ router.use(authenticateJWT, authorizeAdmin);
 router.get("/admin/dashboard", (req, res) => {
   res.json({ message: "Welcome to the admin dashboard" });
 });
-
-router.delete(
-  "/users/:auth0UserId",
-  authenticateJWT,
-  authorizeAdmin,
-  adminController.deleteUserById
-);
 
 router.patch(
   "/users/transform-user/:auth0UserId",

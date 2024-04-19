@@ -1,7 +1,7 @@
 //src/app.js
 
 require("dotenv").config({
-  path: "C:/Users/raffp/Levi Ducci/Levi Ducci - INTLLAW/Development/Platform/.env",
+  path: "/Users/rafaelprezia/Desktop/StorageD/Development/INTLLAW/.env",
 });
 const ssoAuthRouter = require("./api/auth/ssoController");
 
