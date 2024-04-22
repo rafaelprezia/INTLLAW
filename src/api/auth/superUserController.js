@@ -243,3 +243,44 @@ exports.deleteUserById = async (req, res) => {
       .json({ message: "Error deleting user", error: error.message });
   }
 };
+
+// create a function for the superUser to get all admins
+exports.getAllAdmins = async (req, res) => {
+  try {
+    const admins = await Admin.find({});
+    res.json(admins);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching admins", error: error.message });
+  }
+};
+
+// create a function for the superUser to get specific admin by Id
+exports.getAdminById = async (req, res) => {
+  try {
+    const admin = await Admin.findById(req.params.id);
+    res.json(admin);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching admin", error: error.message });
+  }
+};
+
+// create a function for the superUser to delete specific admin by Id
+exports.deleteAdminById = async (req, res) => {
+  try {
+    const admin = await Admin.findByIdAndDelete(req.params.id);
+    // delete all workers that pertains to the admin organization
+    await User.deleteMany({ admin: mongoose.Types.ObjectId(req.params.id) });
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+    res.json({ message: "Admin deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error deleting admin", error: error.message });
+  }
+};

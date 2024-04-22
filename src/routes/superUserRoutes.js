@@ -43,4 +43,25 @@ router.delete(
   superUserController.deleteUserById
 );
 
+router.get(
+  "/admins",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.getAllAdmins
+);
+
+router.get(
+  "/admins/:id",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.getAdminById
+);
+
+router.delete(
+  "/admins/:id",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.deleteAdminById
+);
+
 module.exports = router;

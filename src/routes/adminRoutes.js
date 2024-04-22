@@ -20,7 +20,7 @@ router.get("/admin/dashboard", (req, res) => {
 });
 
 router.patch(
-  "/users/transform-user/:auth0UserId",
+  "/users/transform-user",
   authenticateJWT,
   authorizeAdmin,
   adminController.transformUserToWorker
@@ -38,6 +38,20 @@ router.get(
   authenticateJWT,
   authorizeAdmin,
   adminController.getWorkerByAdminIdAndUserId
+);
+
+router.delete(
+  "/delete-worker/:adminId/:userId",
+  authenticateJWT,
+  authorizeAdmin,
+  adminController.deleteWorkerById
+);
+
+router.post(
+  "/send-emails",
+  authenticateJWT,
+  authorizeAdmin,
+  adminController.createWorkerLink
 );
 
 // Add other admin routes as necessary
