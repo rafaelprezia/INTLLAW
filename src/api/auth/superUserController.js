@@ -9,6 +9,7 @@ const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const { generateSecretKey, verifyKey } = require("../utils/generateKey");
 const createEmail = require("../utils/emailSetup");
+const { ObjectId } = require("mongoose").Types;
 
 exports.createSuperUser = async (req, res) => {
   const { email, password, name, secretKey } = req.body;
@@ -269,16 +270,57 @@ exports.getAdminById = async (req, res) => {
 };
 
 // create a function for the superUser to delete specific admin by Id
+
 exports.deleteAdminById = async (req, res) => {
+  const adminId = req.params.id;
+
   try {
-    const admin = await Admin.findByIdAndDelete(req.params.id);
-    // delete all workers that pertains to the admin organization
-    await User.deleteMany({ admin: mongoose.Types.ObjectId(req.params.id) });
+    // Delete admin from database
+    const admin = await Admin.findByIdAndDelete(adminId);
     if (!admin) {
       return res.status(404).json({ message: "Admin not found" });
     }
-    res.json({ message: "Admin deleted successfully" });
+
+    // Fetch all workers associated with the admin's organization
+    const workers = await User.find({ admin: new ObjectId(adminId) });
+
+    // Get the Auth0 Management API token
+    const token = await getAuth0ManagementApiToken();
+
+    // Delete each worker from Auth0 and the database
+    await Promise.all(
+      workers.map(async (worker) => {
+        if (worker.auth0Id) {
+          const options = {
+            method: "delete",
+            url: `https://dev-rutnsxpydci36ykm.us.auth0.com/api/v2/users/${worker.auth0Id}`,
+            headers: { Authorization: `Bearer ${token}` },
+          };
+          try {
+            const response = await axios.request(options);
+            if (response.status !== 204) {
+              console.log(
+                `Failed to delete worker ${worker.auth0Id} from Auth0`
+              );
+            }
+          } catch (error) {
+            console.error(
+              `Error deleting worker ${worker.auth0Id} from Auth0:`,
+              error
+            );
+          }
+        }
+      })
+    );
+
+    // Delete workers from the internal database
+    await User.deleteMany({ admin: new ObjectId(adminId) });
+
+    res.json({
+      message: "Admin and all associated workers deleted successfully",
+    });
   } catch (error) {
+    console.error("Error deleting admin:", error);
     res
       .status(500)
       .json({ message: "Error deleting admin", error: error.message });
