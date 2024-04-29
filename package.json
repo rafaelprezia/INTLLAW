@@ -41,7 +41,7 @@
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "sharp": "^0.33.3",
-    "stripe": "^14.23.0",
+    "stripe": "^14.25.0",
     "winston": "^3.13.0"
   },
   "devDependencies": {

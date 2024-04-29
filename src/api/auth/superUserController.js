@@ -2,6 +2,9 @@
 const User = require("../../models/user");
 const SuperUser = require("../../models/superUser");
 const Admin = require("../../models/admin");
+require("dotenv").config({
+  path: "/Users/rafaelprezia/Desktop/StorageD/Development/INTLLAW/.env",
+});
 
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
@@ -15,10 +18,7 @@ exports.createSuperUser = async (req, res) => {
   const { email, password, name, secretKey } = req.body;
 
   // Replace 'your-secret-key' with your actual secret key
-  if (
-    secretKey !==
-    "a3a225e4caa5a28f21ad83928e4fd1bc42af6e5857c22d1505d4f15a97ec80a467cad7a9dc7e2235766796f5b54bca9d"
-  ) {
+  if (secretKey !== process.env.SECRET_KEY) {
     return res
       .status(401)
       .json({ message: "Unauthorized to create superUser" });
