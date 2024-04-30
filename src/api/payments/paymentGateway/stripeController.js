@@ -109,3 +109,50 @@ exports.storeInvoiceChargeAndLineItems = async (req, res) => {
     });
   }
 };
+
+// create a controller function that gets stored invoices from MongoDB
+exports.fetchAllInvoices = async (req, res) => {
+  try {
+    const invoices = await Invoice.find();
+    res.status(200).json(invoices);
+  } catch (error) {
+    console.error("Error fetching invoices:", error);
+    res.status(500).send("Failed to retrieve invoices");
+  }
+};
+
+// create a controller function that gets a specific invoice by ID
+exports.fetchInvoiceById = async (req, res) => {
+  const invoiceId = req.params.id;
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+    res.status(200).json(invoice);
+  } catch (error) {
+    console.error("Error fetching invoice by ID:", error);
+    res.status(500).send("Failed to retrieve invoice by ID");
+  }
+};
+
+exports.fetchInvoiceDataById = async (req, res) => {
+  const invoiceId = req.params.id;
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    if (!invoice) {
+      return res.status(404).json({ error: "Invoice not found" });
+    }
+    res
+      .status(200)
+      .json([
+        invoice.invoiceData.lineItems[0].quantity,
+        invoice.invoiceData.invoiceData.customer_email,
+        invoice.invoiceData.invoiceData.customer_name,
+        invoice.invoiceData.invoiceData.customer_phone,
+      ]);
+  } catch (error) {
+    console.error("Error fetching invoice by ID:", error);
+    res.status(500).send("Failed to retrieve invoice by ID");
+  }
+};

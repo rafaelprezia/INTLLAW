@@ -26,4 +26,25 @@ router.post(
   stripeController.storeInvoiceChargeAndLineItems
 );
 
+router.get(
+  "/get-invoice",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  stripeController.fetchAllInvoices
+);
+
+router.get(
+  "/get-invoice/:id",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  stripeController.fetchInvoiceById
+);
+
+router.get(
+  "/get-invoice-data/:id",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  stripeController.fetchInvoiceDataById
+);
+
 module.exports = router;
