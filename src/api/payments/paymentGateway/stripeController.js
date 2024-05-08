@@ -51,7 +51,9 @@ exports.fetchAllCharges = async (req, res) => {
   }
 };
 exports.storeInvoiceChargeAndLineItems = async (req, res) => {
-  const invoiceId = req.body.invoiceId; // Expect an invoice ID in the request body
+  const invoiceId = req.body.invoiceId;
+  const ipAddress = req.ip; // Expect an invoice ID in the request body
+  // get user ip adress befor and store in the invoice
   try {
     if (!invoiceId || !invoiceId.startsWith("in_")) {
       return res.status(400).json({ error: "Invalid or missing invoice ID" });
@@ -94,6 +96,7 @@ exports.storeInvoiceChargeAndLineItems = async (req, res) => {
     // Save to MongoDB
     const newInvoiceEntry = new Invoice({
       invoiceData: invoiceChargeLineItems,
+      ipAddress: req.ip,
     });
     await newInvoiceEntry.save();
 
@@ -156,3 +159,16 @@ exports.fetchInvoiceDataById = async (req, res) => {
     res.status(500).send("Failed to retrieve invoice by ID");
   }
 };
+
+// create a controller function get all invoices by ipAdress
+exports.fetchInvoicesByIpAddress = async (req, res) => {
+  const ipAddress = req.params.ip;
+  try {
+    const invoices = await Invoice.find({ ipAddress: ipAddress });
+    res.status(200).json(invoices);
+  } catch (error) {
+    console.error("Error fetching invoices by IP address:", error);
+    res.status(500).send("Failed to retrieve invoices by IP address");
+  }
+};
+// create a controller function that deletes an invoice by ID

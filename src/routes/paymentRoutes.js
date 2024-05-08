@@ -1,10 +1,34 @@
 // routes.js
 const router = require("express").Router();
 const stripeController = require("../api/payments/paymentGateway/stripeController.js");
-const redirectController = require("../api/payments/index");
 const superUserMiddleware = require("../middleware/superUserMiddleware");
+const {
+  getPaymentData,
+  redirectBasedUponSeats,
+} = require("../api/payments/index.js");
 
 // Route to get all charges
+
+router.get(
+  "/ip",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  async (req, res) => {
+    try {
+      const ip = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      console.log(ip);
+      // Extract the token from the Authorization header
+      const token = req.headers.authorization.split(" ")[1]; // Assumes the Authorization header format is "Bearer [token]"
+      const paymentData = await getPaymentData(ip, token);
+      const response = await redirectBasedUponSeats(paymentData, token);
+      res.status(200).send(response);
+    } catch (error) {
+      console.error(error); // Logging the error to the console
+      res.status(500).send({ error: error.message });
+    }
+  }
+);
+
 router.get(
   "/charges",
   superUserMiddleware.authenticateSuperUserJWT,
@@ -13,10 +37,10 @@ router.get(
 );
 
 router.get(
-  "/process-last-purchase",
-  redirectController.redirectBasedOnSeats,
+  "/invoice/:ip",
+  superUserMiddleware.authenticateSuperUserJWT,
   superUserMiddleware.authorizeSuperUser,
-  stripeController.fetchAllCharges
+  stripeController.fetchInvoicesByIpAddress
 );
 
 router.post(
@@ -27,21 +51,21 @@ router.post(
 );
 
 router.get(
-  "/get-invoice",
+  "/invoice",
   superUserMiddleware.authenticateSuperUserJWT,
   superUserMiddleware.authorizeSuperUser,
   stripeController.fetchAllInvoices
 );
 
 router.get(
-  "/get-invoice/:id",
+  "/invoice/:id",
   superUserMiddleware.authenticateSuperUserJWT,
   superUserMiddleware.authorizeSuperUser,
   stripeController.fetchInvoiceById
 );
 
 router.get(
-  "/get-invoice-data/:id",
+  "/invoice-data/:id",
   superUserMiddleware.authenticateSuperUserJWT,
   superUserMiddleware.authorizeSuperUser,
   stripeController.fetchInvoiceDataById

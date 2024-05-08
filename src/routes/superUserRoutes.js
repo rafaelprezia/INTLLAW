@@ -7,6 +7,13 @@ const superUserMiddleware = require("../middleware/superUserMiddleware");
 router.post("/createSuperUser", superUserController.createSuperUser);
 
 router.post(
+  "/userLink",
+  superUserMiddleware.authenticateSuperUserJWT,
+  superUserMiddleware.authorizeSuperUser,
+  superUserController.createUserLink
+);
+
+router.post(
   "/adminLink",
   superUserMiddleware.authenticateSuperUserJWT,
   superUserMiddleware.authorizeSuperUser,

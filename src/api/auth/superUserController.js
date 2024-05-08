@@ -11,7 +11,7 @@ const axios = require("axios");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const { generateSecretKey, verifyKey } = require("../utils/generateKey");
-const createEmail = require("../utils/emailSetup");
+const { createEmailAdmin, createEmailUser } = require("../utils/emailSetup");
 const { ObjectId } = require("mongoose").Types;
 
 exports.createSuperUser = async (req, res) => {
@@ -37,12 +37,51 @@ exports.createSuperUser = async (req, res) => {
   }
 };
 
+exports.createUserLink = async (req, res) => {
+  const { name, lastname, futureUserMail } = req.body;
+
+  try {
+    // Step 1: Use the data passed from the body to create the email
+    const emailBody = createEmailUser(name, lastname);
+
+    // Step 2: Send the email to futureUserMail
+    let transporter = nodemailer.createTransport({
+      service: "gmail", // replace with your email service
+      auth: {
+        user: "rafafprezia@gmail.com", // replace with your email
+        pass: "lgqt hvwn wdxj nsup", // replace with your password
+      },
+    });
+
+    let mailOptions = {
+      from: "rafafprezia@gmail.com", // replace with your email
+      to: futureUserMail,
+      subject: "Welcome to Our Platform",
+      html: emailBody,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        res
+          .status(400)
+          .json({ message: "Error sending email", error: error.message });
+      } else {
+        res.status(201).json({ message: "Email sent successfully" });
+      }
+    });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Error creating user", error: error.message });
+  }
+};
+
 exports.createAdminLink = async (req, res) => {
   const { name, lastname, futureAdminMail } = req.body;
 
   try {
     // Step 1: Use the data passed from the body to create the email
-    const emailBody = createEmail(name, lastname);
+    const emailBody = createEmailAdmin(name, lastname);
 
     // Step 2: Send the email to futureAdminMail
     let transporter = nodemailer.createTransport({

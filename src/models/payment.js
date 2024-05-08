@@ -6,6 +6,10 @@ const InvoiceSchema = new mongoose.Schema({
     type: Object,
     required: true,
   },
+  ipAddress: {
+    type: String,
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,
