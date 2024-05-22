@@ -4,6 +4,7 @@ require("dotenv").config({
   path: "/Users/rafaelprezia/Desktop/Local/Work/StorageD/Development/Platform/API/.env",
 });
 const ssoAuthRouter = require("./api/auth/ssoController");
+const legalCaseRoutes = require("./routes/documentRoutes");
 const express = require("express");
 const cors = require("cors");
 
@@ -29,6 +30,7 @@ app.use("/auth", callbackRoutes);
 app.use("/auth", userRoutes);
 app.use("/root", superUserRoutes);
 app.use("/stripe", paymentRoutes);
+app.use("/media", documentRoutes);
 app.use(cors()); // This allows all cross-origin requests. You might want to configure it for specific origins.
 
 module.exports = app;
