@@ -7,6 +7,7 @@ const LegalCaseSchema = new mongoose.Schema({
   partiesInvolved: { type: String, required: true },
   category: { type: String },
   content: { type: String },
+  tags: { type: Array },
 });
 
 module.exports = mongoose.model("LegalCase", LegalCaseSchema);

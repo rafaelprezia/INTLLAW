@@ -21,6 +21,7 @@ const callbackRoutes = require("./routes/callbackRoutes"); // Adjust the path as
 const superUserRoutes = require("./routes/superUserRoutes");
 
 const app = express();
+app.use(cors()); // This allows all cross-origin requests. You might want to configure it for specific origins.
 // Parses incoming requests with URL-encoded payloads
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -31,6 +32,5 @@ app.use("/auth", userRoutes);
 app.use("/root", superUserRoutes);
 app.use("/stripe", paymentRoutes);
 app.use("/media", documentRoutes);
-app.use(cors()); // This allows all cross-origin requests. You might want to configure it for specific origins.
 
 module.exports = app;
