@@ -12,8 +12,8 @@ router.post(
 );
 router.get(
   "/legal-cases/:id",
-  superUserMiddleware.authenticateSuperUserJWT,
-  superUserMiddleware.authorizeSuperUser,
+  // superUserMiddleware.authenticateSuperUserJWT,
+  // superUserMiddleware.authorizeSuperUser,
   legalCaseController.getLegalCaseById
 );
 router.patch(
@@ -30,8 +30,8 @@ router.delete(
 );
 router.get(
   "/legal-cases",
-  superUserMiddleware.authenticateSuperUserJWT,
-  superUserMiddleware.authorizeSuperUser,
+  // superUserMiddleware.authenticateSuperUserJWT,
+  // superUserMiddleware.authorizeSuperUser,
   legalCaseController.getAllLegalCases
 );
 
