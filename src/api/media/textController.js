@@ -63,6 +63,70 @@ exports.getLegalCaseById = async (req, res) => {
   }
 };
 
+exports.getLegalCaseBasicSearch = async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    const queries = query.split(" ");
+
+    const regexQueries = queries.map(query => new RegExp(query, 'i'));
+
+    const Documents = await LegalCase.find({
+      $or: [
+          { title: { $all: regexQueries } },
+          { partiesInvolved: { $all: regexQueries } },
+          { category: { $all: regexQueries } },
+          { content: { $all: regexQueries } },
+          { tags: { $all: regexQueries } }
+      ]
+  })
+   
+    res.status(200).json(Documents);
+
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
+exports.getLegalCaseAdvancedSearch = async (req, res) => {
+  try {
+    const { title, date, parties, category, tags } = req.query;
+
+    let searchFilters = {};
+
+    if (title) {
+      const titleQueries = title.split(" ").map(t => new RegExp(t, 'i'));
+      searchFilters.title = { $all: titleQueries };
+    }
+
+    if (date) {
+      searchFilters.date = date;
+    }
+
+    if (parties) {
+      const partiesQueries = parties.split(" ").map(p => new RegExp(p, 'i'));
+      searchFilters.partiesInvolved = { $all: partiesQueries };
+    }
+
+    if (category) {
+      const categoryQueries = category.split(" ").map(c => new RegExp(c, 'i'));
+      searchFilters.category = { $all: categoryQueries };
+    }
+
+    if (tags) {
+      const tagsQueries = tags.split(",").map(t => new RegExp(t, 'i'));
+      searchFilters.tags = { $all: tagsQueries };
+    }
+
+    const Documents = await LegalCase.find(searchFilters);
+
+    res.status(200).json(Documents);
+
+  } catch (error) {
+    res.status(500).send(error);
+  }
+};
+
 // Update a legal case
 exports.updateLegalCase = async (req, res) => {
   const updates = Object.keys(req.body);
