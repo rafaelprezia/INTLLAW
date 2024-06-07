@@ -129,25 +129,17 @@ exports.getLegalCaseAdvancedSearch = async (req, res) => {
 
 // Update a legal case
 exports.updateLegalCase = async (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ["title", "date", "partiesInvolved", "sectionOne"];
-  const isValidOperation = updates.every((update) =>
-    allowedUpdates.includes(update)
-  );
-
-  if (!isValidOperation) {
-    return res.status(400).send({ error: "Invalid updates!" });
-  }
+  const { id } = req.params;
+  const updates = req.body;
 
   try {
-    const legalCase = await LegalCase.findById(req.params.id);
-    if (!legalCase) {
-      return res.status(404).send();
+    const updatedLegalCase = await LegalCase.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+
+    if (!updatedLegalCase) {
+      return res.status(404).send({ message: "Legal case not found" });
     }
 
-    updates.forEach((update) => (legalCase[update] = req.body[update]));
-    await legalCase.save();
-    res.send(legalCase);
+    res.send(updatedLegalCase);
   } catch (error) {
     res.status(400).send(error);
   }
